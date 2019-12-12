@@ -1,3 +1,30 @@
+# Copyright (c) 2018 Yubico AB
+# All rights reserved.
+#
+#   Redistribution and use in source and binary forms, with or
+#   without modification, are permitted provided that the following
+#   conditions are met:
+#
+#    1. Redistributions of source code must retain the above copyright
+#       notice, this list of conditions and the following disclaimer.
+#    2. Redistributions in binary form must reproduce the above
+#       copyright notice, this list of conditions and the following
+#       disclaimer in the documentation and/or other materials provided
+#       with the distribution.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+# "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+# LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+# FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+# COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+# INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+# BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+# LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+# CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+# LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
+# ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+# POSSIBILITY OF SUCH DAMAGE.
+
 """
 Connects to the first FIDO device found (starts from USB, then looks into NFC),
 creates a new credential for it, and authenticates the credential.
@@ -11,6 +38,7 @@ from fido2.client import Fido2Client, WindowsClient
 from fido2.server import Fido2Server
 from getpass import getpass
 from fido2.utils import websafe_encode, websafe_decode
+from fido2.ctap2 import AttestedCredentialData
 
 import sys
 
@@ -79,12 +107,38 @@ credentials = [auth_data.credential_data]
 
 print("New credential created!")
 
-# https://github.com/Yubico/python-fido2/issues/31
-encoded = websafe_encode(auth_data.credential_data)  # Store this value
-
-print("Credentials: ")
-print(auth_data.credential_data)
+print("CLIENT DATA:", client_data)
+print("ATTESTATION OBJECT:", attestation_object)
 print()
-print("Encoded: ")
-print(encoded)
-#credential_data = AttestedCredentialData(websafe_decode(encoded))  # Restored from serialized value
+print("CREDENTIAL DATA:", auth_data.credential_data)
+
+encoded = websafe_encode(auth_data.credential_data)
+
+creds2 = [AttestedCredentialData(websafe_decode(encoded))]
+
+# Prepare parameters for getAssertion
+#request_options, state = server.authenticate_begin(credentials, user_verification=uv)
+request_options, state = server.authenticate_begin(creds2, user_verification=uv)
+
+# Authenticate the credential
+if use_prompt:
+    print("\nTouch your authenticator device now...\n")
+
+assertions, client_data = client.get_assertion(request_options["publicKey"], pin=pin)
+assertion = assertions[0]  # Only one cred in allowCredentials, only one response.
+
+# Complete authenticator
+server.authenticate_complete(
+    state,
+    credentials,
+    assertion.credential["id"],
+    client_data,
+    assertion.auth_data,
+    assertion.signature,
+)
+
+print("Credential authenticated!")
+
+print("CLIENT DATA:", client_data)
+print()
+print("ASSERTION DATA:", assertion)
