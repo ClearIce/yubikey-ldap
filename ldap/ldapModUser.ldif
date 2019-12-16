@@ -1,0 +1,4 @@
+dn: uid=ClearIce,ou=People,dc=testldap,dc=com
+changetype: modify
+replace: credential
+credential: ded

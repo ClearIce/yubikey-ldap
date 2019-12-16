@@ -20,7 +20,7 @@ uv = "discouraged"
 
 if WindowsClient.is_available():
     # Use the Windows WebAuthn API if available
-    client = WindowsClient("https://example.com")
+    client = WindowsClient("https://testrandomdomainthatsurelydoesntexist.com")
 else:
     # Locate a device
     dev = next(CtapHidDevice.list_devices(), None)
@@ -41,7 +41,7 @@ else:
         sys.exit(1)
 
     # Set up a FIDO 2 client using the origin https://example.com
-    client = Fido2Client(dev, "https://example.com")
+    client = Fido2Client(dev, "https://testrandomdomainthatsurelydoesntexist.com")
 
     # Prefer UV if supported
     if client.info.options.get("uv"):
@@ -54,7 +54,7 @@ else:
         print("PIN not set, won't use")
 
 
-server = Fido2Server({"id": "example.com", "name": "Example RP"}, attestation="direct")
+server = Fido2Server({"id": "testrandomdomainthatsurelydoesntexist.com", "name": "Example RP"}, attestation="direct")
 
 # id stored in DB, queried via user name
 user = {"id": b"user_id", "name": "A. User"}

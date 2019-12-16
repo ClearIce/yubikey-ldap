@@ -1,0 +1,17 @@
+dn: uid=clearice,ou=People,dc=testldap,dc=com
+objectClass: inetOrgPerson
+objectClass: posixAccount
+objectClass: shadowAccount
+objectClass: fido2credential
+uid: clearice
+sn: Ice
+givenName: Clear
+cn: ClearIce
+displayName: clearice
+uidNumber: 10000
+gidNumber: 5000
+userPassword: somepassword
+gecos: ClearIce
+loginShell: /bin/bash
+homeDirectory: /home/clearice
+credential: testestest

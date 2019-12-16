@@ -1,2 +1,3 @@
 cbor
 fido2
+python-ldap

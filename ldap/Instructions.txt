@@ -1,0 +1,50 @@
+Attestation is the web-encoded object for requesting auth against a yubikey
+ldapBasic sets up a basic User/Group (ldapUser.ldif is the individual user)
+ldapModUser.ldif should add the encoded object to the user object in LDAP once we change the schema
+
+Install:
+dpkg-reconfigure slapd
+	Set domain, password, etc.
+
+
+on Ubunbtu:
+$ ldapadd -x -D cn=admin,dc=testldap,dc=com -W -f ldapBasic.ldif
+Sets up admin user
+
+
+Schema changes (this will add the fido2 stuff)
+
+schema_convert.conf:
+include /etc/ldap/schema/core.schema
+include /etc/ldap/schema/cosine.schema
+include /etc/ldap/schema/nis.schema
+include /etc/ldap/schema/inetorgperson.schema
+include /home/USER/fido2.schema
+
+fido2.schema:
+attributetype ( 1.3.6.1.4.1.34468.2.56.1.1 NAME 'credential'
+	DESC 'FIDO2 attestation web-encoded attestation object from python-fido2'
+	SYNTAX 1.3.6.1.4.1.1466.115.121.1.15{1024}
+	SINGLE-VALUE
+	USAGE userApplications )
+objectclass ( 1.3.6.1.4.1.34468.2.56.2.1 NAME 'fido2credential'
+	DESC 'FIDO2 Attestation Object'
+	SUP top 
+	STRUCTURAL
+	MAY credential )
+
+on Ubuntu:
+$ slapcat -f schema_convert.conf -F /etc/ldap/slapd.d/ -n 0
+
+*** BACK UP SLAPD.D BEFORE DOING THIS ***
+(I'm pretty sure openldap user owned everything under slapd.d but I'm not sure, so slapcat as root may be a bad idea)
+
+$ chown -R openldap:openldap /etc/ldap/slapd.d
+
+(may just be able to drop the custom ldif in cn=config/cn=schema with appropriate index number from braces,e.g. "cn={3}inetorgperson.ldif" index is 3, just add 1 to largest, e.g. "cn={4}fido2.ldif" )
+
+ldapsearch -Q -LLL -Y EXTERNAL -H ldapi:/// -b uid=clearice,ou=People,dc=testldap,dc=com
+
+Can use Apache Directory Studio to update credential
+
+Consider encrypting it

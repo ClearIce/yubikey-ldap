@@ -1,0 +1,12 @@
+dn: ou=People,dc=testldap,dc=com
+objectClass: organizationalUnit
+ou: People
+
+dn: ou=Groups,dc=testldap,dc=com
+objectClass: organizationalUnit
+ou: Groups
+
+dn: cn=admin,ou=Groups,dc=testldap,dc=com
+objectClass: posixGroup
+cn: miners
+gidNumber: 5000

@@ -1,0 +1,10 @@
+attributetype ( 1.3.6.1.4.1.34468.2.56.1.1 NAME 'credential'
+	DESC 'FIDO2 attestation web-encoded attestation object from python-fido2'
+	SYNTAX 1.3.6.1.4.1.1466.115.121.1.15{1024}
+	SINGLE-VALUE
+	USAGE userApplications )
+objectclass ( 1.3.6.1.4.1.34468.2.56.2.1 NAME 'fido2credential'
+	DESC 'FIDO2 Attestation Object'
+	SUP top 
+	AUXILIARY
+	MAY credential )
